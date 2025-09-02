@@ -1,45 +1,54 @@
 const loginSchema = require("../models/SignUp");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 const LoginData = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    
+ 
     const user = await loginSchema.findOne({ email });
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "Email not found",
-      });
-    }
-
-    
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid credentials",
+        message: "User not found",
       });
     }
 
    
+    const ans = await bcrypt.compare(password, user.password);
+    if (!ans) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid password",
+      });
+    }
+
     const payload = {
+      role: user.role,
       email: user.email,
       id: user._id,
-      role: user.role,
     };
 
-    return res.status(200).json({
+    const token = jwt.sign(payload, process.env.Prab_key, {
+      expiresIn: "10d",
+    });
+
+   
+    res.cookie("token", token);
+
+  
+    res.status(200).json({
       success: true,
-      message: "Login Successful",
+      message: "Login Success",
+      token,
       payload,
     });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({
+  } catch (error) {
+    res.status(500).json({
       success: false,
-      message: "Server error",
+      message: error.message,
     });
   }
 };
