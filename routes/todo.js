@@ -10,6 +10,7 @@ const SignUP = require('../controller/Signup');
 const login = require('../controller/Login')
 
 
+
 router.post('/todo', createTodo);
 router.get('/Gettodo', Gettodo);
 router.get('/Gettodoid/:id', GetTodo);
